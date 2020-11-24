@@ -13,29 +13,39 @@ in
   # the Home Manager release notes for a list of state version
   # changes in each release.
 
-  home.stateVersion = "20.03";
+  home.stateVersion = "20.09";
+  home.username="emhac";
+  home.homeDirectory="/home/emhac/";
 
   home.packages = with pkgs; [
-    htop
-    fortune
-    unzip
-    wget
+    bat
+    cabal-install
+    cabal2nix
+    cargo
     curl
     exa
-    bat
     fd
-    ripgrep
-    jq
+    fortune
     fzf
+    htop
+    jq
     nodejs
+    ripgrep
     rustc
-    cargo
+    unzip
+    wget
+    xclip
     yarn
+    ghcid
+    dhall
+    ormolu
+    zip
+    hlint
     haskellPackages.ghcide
     haskellPackages.ghcid
-#   (import (builtins.fetchTarball "https://github.com/cachix/ghcide-nix/tarball/master") {}).ghcide-ghc883
+    haskellPackages.haskell-language-server
+    nodePackages.typescript
   ];
-
 
   programs.tmux = {
 	  enable = true;
@@ -261,5 +271,4 @@ in
     userName  = "Mateusz Curylo";
     userEmail = "mateusz.curylo@protonmail.com";
   };
-
 }
