@@ -61,11 +61,15 @@ in
 	  oh-my-zsh = {
 		  theme = "robbyrussell";
 		  enable = true;
-		  plugins = [ "git" "sudo" "yarn" ];
+		  plugins = [ "git" "sudo" "yarn" "fzf" ];
 	  };
           profileExtra = ''
             export PATH="$HOME/.cabal/bin:$HOME/.ghcup/bin:$HOME/.local/bin:$PATH"
             if [ -e /home/emhac/.nix-profile/etc/profile.d/nix.sh ]; then . /home/emhac/.nix-profile/etc/profile.d/nix.sh; fi
+            
+            eval "$(direnv hook zsh)"
+
+            [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
           '';
   };
 
@@ -175,8 +179,8 @@ in
       nmap <leader>rn <Plug>(coc-rename)
 
       " Formatting selected code.
-      xmap <leader>f  <Plug>(coc-format-selected)
-      nmap <leader>f  <Plug>(coc-format-selected)
+      xmap <leader>F  <Plug>(coc-format-selected)
+      nmap <leader>F  <Plug>(coc-format-selected)
 
       augroup mygroup
         autocmd!
@@ -244,16 +248,32 @@ in
       " Resume latest coc list.
       nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 
+      " fzf.vim
+      nnoremap <leader>fb :Buffers<CR>
+      nnoremap <leader>ff :Files<CR>
+      nnoremap <leader>ft :Tags<CR>
+      nnoremap <leader>fg :Rg<CR>
+
+      "Use Grepper
+      nnoremap <leader>ga :Grepper -tool rg<cr>
+      nnoremap <leader>gb :Grepper -buffer -tool rg<cr>
+      nmap gs  <plug>(GrepperOperator)
+      
+      autocmd BufWritePre *.* %s/\s\+$//e
+
+      hi link CocFloating markdown
     '';
 
     plugins = with pkgs.vimPlugins; [
       fugitive
       vim-grepper
       vim-nix
+      vim-monokai
       yats-vim
       denite
       haskell-vim
       vim-unimpaired
+      typescript-vim
       nerdtree
       fzf-vim
       fzfWrapper
