@@ -2,6 +2,8 @@
 
 let
   mod = "Mod4";
+  username = builtins.getEnv "USERNAME";
+  homeDir = builtins.getEnv "HOME";
 in
 
 {
@@ -14,19 +16,18 @@ in
   # changes in each release.
 
   home.stateVersion = "20.09";
-  home.username="emhac";
-  home.homeDirectory="/home/emhac/";
+  home.username=username;
+  home.homeDirectory=homeDir;
 
   home.packages = with pkgs; [
     bat
-    cabal-install
-    cabal2nix
     cargo
     curl
     exa
     fd
     fortune
     fzf
+    gh
     htop
     jq
     nodejs
@@ -36,21 +37,45 @@ in
     wget
     xclip
     yarn
-    ghcid
     dhall
-    ormolu
     zip
-    hlint
-    haskellPackages.ghcide
-    haskellPackages.ghcid
-    haskellPackages.haskell-language-server
     nodePackages.typescript
   ];
 
   programs.tmux = {
 	  enable = true;
-	  terminal = "tmux-256color";
 	  shortcut = "a";
+    keyMode = "vi";
+    terminal = "screen-256color";
+    extraConfig = ''
+      set -g base-index 1
+
+      set -g pane-base-index 1
+      bind : command-prompt
+      bind h select-pane -L
+      bind j select-pane -D
+      bind k select-pane -U
+      bind l select-pane -R
+
+      set -g status-position bottom
+      set -g status-left ""
+      set -g status-right-length 50
+      set -g status-left-length 20
+
+      is_vim="ps -o state= -o comm= -t '#{pane_tty}' \
+          | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|n?vim?x?)(diff)?$'"
+
+      bind-key -n C-h if-shell "$is_vim" "send-keys C-h"  "select-pane -L"
+      bind-key -n C-j if-shell "$is_vim" "send-keys C-j"  "select-pane -D"
+      bind-key -n C-k if-shell "$is_vim" "send-keys C-k"  "select-pane -U"
+      bind-key -n C-l if-shell "$is_vim" "send-keys C-l"  "select-pane -R"
+
+      bind-key -n C-\\ if-shell "$is_vim" "send-keys C-\\" "select-pane -l"
+      bind C-l send-keys 'C-l'
+
+
+
+    '';
   };
 
   programs.zsh = {
@@ -61,16 +86,17 @@ in
 	  oh-my-zsh = {
 		  theme = "robbyrussell";
 		  enable = true;
-		  plugins = [ "git" "sudo" "yarn" "fzf" ];
+		  plugins = [ "git" "sudo" "yarn" "fzf" "vi-mode" ];
 	  };
-          profileExtra = ''
+    profileExtra = ''
             export PATH="$HOME/.cabal/bin:$HOME/.ghcup/bin:$HOME/.local/bin:$PATH"
-            if [ -e /home/emhac/.nix-profile/etc/profile.d/nix.sh ]; then . /home/emhac/.nix-profile/etc/profile.d/nix.sh; fi
-            
-            eval "$(direnv hook zsh)"
+            export USERNAME=${username}
+            if [ -e ${homeDir}/.nix-profile/etc/profile.d/nix.sh ]; then . ${homeDir}/.nix-profile/etc/profile.d/nix.sh; fi
+
+            export NIX_PATH=darwin-config=$HOME/.nixpkgs/darwin-configuration.nix:$HOME/.nix-defexpr/channels
 
             [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-          '';
+    '';
   };
 
   programs.neovim = {
@@ -258,7 +284,10 @@ in
       nnoremap <leader>ga :Grepper -tool rg<cr>
       nnoremap <leader>gb :Grepper -buffer -tool rg<cr>
       nmap gs  <plug>(GrepperOperator)
-      
+
+      nnoremap <leader>% :vsplit<CR>
+      nnoremap <leader>" :split<CR>
+
       autocmd BufWritePre *.* %s/\s\+$//e
 
       hi link CocFloating markdown
@@ -271,14 +300,12 @@ in
       vim-monokai
       yats-vim
       denite
-      haskell-vim
       vim-unimpaired
       typescript-vim
       nerdtree
       fzf-vim
       fzfWrapper
       vim-surround
-      vim-hoogle
       coc-nvim
       coc-git
       coc-json
